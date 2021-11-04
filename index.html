@@ -1,0 +1,454 @@
+<!-- <meta http-equiv="Refresh" content="0; url='https://photo.lymhit.fr/'" /> -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>New World - Armor Weight Configurator</title>
+<meta name="viewport" content="width=device-width, initial-scale=0.6">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<!-- Version développement. Celle-ci donne des avertissements utiles sur la console -->
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/vue@2"></script> -->
+</head>
+<body>
+    <div id="app">
+        <div class="txt">
+            <div class="alert title">
+                <p>{{ trad[lang]['txt_1'] }}</p>
+                <p>{{ trad[lang]['txt_2'] }}</p>
+                <span class="lang" v-on:click="changelang(lang_dis)">{{lang_dis}}</span>
+            </div>
+            <p>{{ trad[lang]['txt_3'] }}</p>
+            <p>{{ trad[lang]['txt_4'] }}</p>
+            <div class="alert dodge info" :class="totalClass">{{ trad[lang]['info_dodge'] }}</div>
+            <div class="alert bonus info">{{ trad[lang]['info_bonus'] }}</div>
+            <p>{{ trad[lang]['txt_5'] }}</p>
+        </div>
+        <div class="divapp">
+            <ul>
+                <li v-for="(item, item_index) in items" :key="item.id">
+                    <span 
+                    class="carre polaroid" 
+                    :class="type+'-'+item.name" 
+                    :id="type+'-'+item.name" 
+                    v-for="(type, index_type) in types" 
+                    :key="type.id" 
+                    v-on:click="updateclick(type,item.name)">
+                        <p class="container" v-if='index_type === 0'>{{ trad[lang][item.name] }}</p>
+                        <p class="container" v-else>{{ trad[lang][type] }}</p>
+                    </span>
+                </li>
+            </ul>
+            <div class="loadbar">
+                <strong class="bar" :style="'height:'+total+'%;'" :class="[totalClass]">{{ total ? total : null }}</strong>
+            </div>
+        </div>
+        <div>
+            <p class="small"></p>
+            <p class="small">Copyright website © <a href="https://github.com/Lymhit" target="_blank">Lymhit on Github</a> - Copyright image © <a href="https://nwdb.info/" target="_blank">nwdb.info</a></p>
+            <p class="small copyright">Lym sur Bakhu dans la companie <a href="https://www.yaztromo.org/site/" target="_blank"> Les Fils de Yaztromo</a> - <a href="https://www.twitch.tv/lymhit" target="_blank">Twitch</a> - <a href="https://twitter.com/Lymhit" target="_blank">Twitter</a> - <a href="https://www.youtube.com/user/lymhit" target="_blank">Youtube</a> - <a href="https://www.puregamemedia.fr/new-world/quelle-armure-choisir-dans-new-world-le-poids-du-stuff/" target="_blank">Source</a></p>
+        </div>
+      </div>
+</body>
+</html>
+<script>
+var app = new Vue({
+    el: '#app',
+    data: {
+        total   : 0,
+        totalClass : 'light',
+        click   : null,
+        lang    : '🇫🇷',
+        lang_dis: '🇬🇧',
+        trad    : {
+            '🇬🇧' : {
+                'helmet':'Helmet',
+                'chest':'Chest ',
+                'hands':'Hands ',
+                'legs':'Legs ',
+                'feet':'Feet ',
+                'shield':'Shield ',
+                'without':'',
+                'light':'Light',
+                'medium':'Medium',
+                'heavy':'Heavy',
+                'txt_1':"New World - Armor Weight Configurator",
+                'txt_2':"The weight of the equipment",
+                'txt_3':"There is a weight constraint that changes your agility and gives you bonuses during your fights.",
+                'txt_4':"Light = Less than 13 kg - Medium = Between 13 and 23 kg - Heavy = More than 23 kg",
+                'txt_5':"Click on type of armor, on the right, the total weight",
+                'info_dodge':"Light: Dodge is a fast roll over a long distance.",
+                'info_bonus':"20% damage and healing bonus.",
+                'info_light_dodge':"Light: Dodge is a fast roll over a long distance.",
+                'info_light_bonus':"20% damage and healing bonuses.",
+                'info_medium_dodge':"Normal: Dodge is a side jump.",
+                'info_medium_bonus':"10% damage and healing bonuses, and the crowd control skills you apply last 10% longer.",
+                'info_heavy_dodge':"Heavy: Dodge is a slow side step.",
+                'info_heavy_bonus':"Blocking stability bonus is increased by 15% and crowd control skills you apply last 20% longer.",
+            },
+            '🇫🇷' : {
+                'helmet':'Casque',
+                'chest':'Cuirasse ',
+                'hands':'Mains ',
+                'legs':'Jambes ',
+                'feet':'Pieds ',
+                'shield':'Bouclier ',
+                'without':'',
+                'light':'Léger',
+                'medium':'Moyen',
+                'heavy':'Lourd',
+                'txt_1':"New World - Configurateur de poids d'armure",
+                'txt_2':"Le poids de l'équipement",
+                'txt_3':"Il existe une contrainte de poids qui modifie votre agilité et vous donne des bonus lors de vos combats.",
+                'txt_4':"Léger = Inférieur à 13 kg - Normal = Entre 13 et 23 kg - Lourd = Plus de 23 kg",
+                'txt_5':"Cliquer sur le type d'armure, à droite s'affiche le poids total des pièces sélectionnées",
+                'info_dodge':"Léger : L'esquive est une roulade rapide sur une grande distance.",
+                'info_bonus':"Bonus de dégâts et de soin de 20%.",
+                'info_light_dodge':"Léger : L'esquive est une roulade rapide sur une grande distance.",
+                'info_light_bonus':"Bonus de dégâts et de soins de 20%.",
+                'info_medium_dodge':"Normal : L'esquive est un saut de côté.",
+                'info_medium_bonus':"Bonus de dégâts et de soins de 10% et les compétences de contrôle de foule que vous appliquez durent 10% plus longtemps.",
+                'info_heavy_dodge':"Lourd : L'esquive est un pas de côté lent.",
+                'info_heavy_bonus':"Bonus de stabilité du blocage est augmentée de 15% et les compétences de contrôle de foule que vous appliquez durent 20% plus longtemps.",
+            },
+        },
+        items   : [
+            {'name':'helmet'},
+            {'name':'chest'},
+            {'name':'hands'},
+            {'name':'legs'},
+            {'name':'feet'},
+            {'name':'shield'},
+        ],
+        weapons : [
+            {'name':'weapon1'},
+            {'name':'weapon2'},
+        ],
+        objs    : [
+            {'name':'amulet'},
+            {'name':'ring'},
+            {'name':'earring'},
+        ],
+        types   : [
+            'without',
+            'light',
+            'medium',
+            'heavy',
+        ],
+        weights : {
+            'heavy-chest'   : 11,
+            'heavy-legs'     : 6.3,
+            'heavy'         : 4.7,
+            'heavy-shield'  : 11,
+            'medium-chest'  : 6.2,
+            'medium-legs'    : 3.5,
+            'medium'        : 2.6,
+            'medium-shield' : 5.4,
+            'light-chest'   : 3.5,
+            'light-legs'     : 2,
+            'light'         : 1.5,
+            'light-shield'  : 2.7
+        },
+        selected_item: {
+            'helmet'        : "without",
+            'chest'         : "without",
+            'hands'         : "without",
+            'legs'          : "without",
+            'feet'          : "without",
+            'shield'        : "without",
+        }
+    },
+    mounted() {
+        document.title = this.trad[this.lang]['txt_1']
+        if (localStorage.selected_item) {
+            this.selected_item = JSON.parse(localStorage.selected_item);
+        }
+        if (localStorage.totalClass) {
+            this.totalClass = localStorage.totalClass;
+        }
+        if (localStorage.total) {
+            this.total = Number(localStorage.total);
+        }
+        if (localStorage.lang) {
+            this.lang = localStorage.lang;
+        }
+        if (localStorage.lang_dis) {
+            this.lang_dis = localStorage.lang_dis;
+        }
+        if (localStorage.info_dodge) {
+            this.trad[this.lang]['info_dodge'] = localStorage.info_dodge;
+        }
+        if (localStorage.info_bonus) {
+            this.trad[this.lang]['info_bonus'] = localStorage.info_bonus;
+        }
+        this.loading();
+    },
+    methods: {
+        loading: function () {
+            let defaultweight = 0;
+            Object.entries(this.selected_item).forEach(entry => {
+                let [item , type] = entry;
+                let span;
+                span = document.getElementById(type+'-'+item);
+                span ? span.classList.add('selected') : null;
+                type === 'without' ? type = null : null;
+                type != null ? item === 'helmet' || item === 'hands' || item === 'feet' ? key = type : key = type+'-'+item : key = null ;
+                key ? defaultweight += this.weights[key] : null;
+            });
+        },
+        changelang: function (lang_dis) {
+            lang_dis === '🇬🇧' ? this.lang_dis = '🇫🇷' : null;
+            lang_dis === '🇬🇧' ? this.lang = '🇫🇷' : null;
+            lang_dis === '🇫🇷' ? this.lang_dis = '🇬🇧' : null;
+            lang_dis === '🇫🇷' ? this.lang = '🇬🇧' : null;
+            localStorage.lang_dis = this.lang_dis;
+            localStorage.lang = this.lang;
+            this.trad[this.lang]['info_dodge'] = this.trad[this.lang]['info_'+this.totalClass+'_dodge'];
+            this.trad[this.lang]['info_bonus'] = this.trad[this.lang]['info_'+this.totalClass+'_bonus'];
+            if (localStorage.info_dodge) {
+                localStorage.info_dodge = this.trad[this.lang]['info_'+this.totalClass+'_dodge'];
+            }
+            if (localStorage.info_bonus) {
+                localStorage.info_bonus = this.trad[this.lang]['info_'+this.totalClass+'_bonus'];
+            }
+
+        },
+        updateclick: function (type,item) {
+            let defaultweight = 0;
+            var key = null;
+            let spans = null;
+            let type_end = null;
+            item === 'helmet' || item === 'hands' || item === 'feet' ? key = type : key = type+'-'+item ;
+            this.selected_item[item] = type;
+            spans = document.getElementsByClassName('carre');
+            for (span of spans) {
+                span.classList.remove('selected');
+            }
+            Object.entries(this.selected_item).forEach(entry => {
+                let [item , type] = entry;
+                let span;
+                span = document.getElementById(type+'-'+item);
+                span ? span.classList.add('selected') : null;
+                type === 'without' ? type = null : null;
+                type != null ? item === 'helmet' || item === 'hands' || item === 'feet' ? key = type : key = type+'-'+item : key = null ;
+                key ? defaultweight += this.weights[key] : null;
+            });
+            var precision = precision || 2;
+            var tmp = Math.pow(10, precision);
+            this.total = Math.round( defaultweight*tmp )/tmp;
+            this.total >= 23 ?  this.totalClass = 'heavy': null;
+            (this.total <= 22.9 && this.total >= 13) ?  this.totalClass = 'medium': null;
+            this.total <= 12.9 ?  this.totalClass = 'light': null;
+            this.trad[this.lang]['info_dodge'] = this.trad[this.lang]['info_'+this.totalClass+'_dodge'];
+            this.trad[this.lang]['info_bonus'] = this.trad[this.lang]['info_'+this.totalClass+'_bonus'];
+            localStorage.total = this.total;
+            localStorage.totalClass = this.totalClass;
+            localStorage.selected_item = JSON.stringify(this.selected_item);
+            localStorage.info_dodge = this.trad[this.lang]['info_dodge'];
+            localStorage.info_bonus = this.trad[this.lang]['info_bonus'];
+        }
+    }
+})
+</script>
+<style>
+    html {
+        font-family: sans-serif;
+        line-height: 1.15;
+        -webkit-text-size-adjust: 100%;
+        color: white;
+    }
+    body {
+        background-color: #1f1f1f;
+    }
+    #app{
+        text-align: center;
+    }
+    .divapp{
+        display: inline-flex;
+    }
+    .txt p{
+        margin: 0;
+    }
+    .small{
+        font-size: small;
+    }
+    .copyright a:nth-child(1){
+        color: #f0f6fc;
+    }
+    .copyright a:nth-child(2){
+        color: #a970ff;
+    }
+    .copyright a:nth-child(3){
+        color: #1d9bf0;
+    }
+    .copyright a:nth-child(4){
+        color: #ff0000;
+    }
+    .copyright a:nth-child(5){
+        color: #3a9ff1;
+    }
+    a {
+        color: antiquewhite;
+        text-decoration: none;
+    }
+    .txt p:nth-child(2){
+        font-size: small;
+    }
+    .txt p:nth-child(3){
+        font-size: small;
+    }
+    .txt p:nth-child(6){
+        margin-top: 1rem;
+        font-size: small;
+    }
+    .lang {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        cursor: pointer;
+    }
+    .alert{
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        max-width: 700px;
+        margin: auto;
+        color: white;
+        background-color: #121212;
+        border-color: #252525;
+        position: relative;
+        padding: 1rem 1rem;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid transparent;
+        border-radius: .25rem;
+    }
+    .bonus{
+        background-color: #032c9e;
+        height: 30px;
+    }
+    li{
+        list-style-type: none; 
+    }
+    .container {
+        text-align: center;
+        position: relative;
+        bottom: 0;
+        margin: auto;
+        background: #1212128a;
+        
+        padding: 4px;
+    }
+    .carre{
+        position: relative;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        width:120px;
+        height:120px;
+        margin: 10px;
+        background:#121212;
+        display: inline-block;
+        overflow: hidden;
+        border-radius: 8px;
+    }
+    .selected {
+        outline: 5px solid rgba(153, 0, 13, 0.479);
+    }
+    /* .without-helmet{
+        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/blueprint/combatdummy.png);
+    }
+    .without-chest{
+        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/blueprint/combatdummy.png);
+    }
+    .without-hands{
+        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/blueprint/combatdummy.png);
+    }
+    .without-legs{
+        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/blueprint/combatdummy.png);
+    } */
+    .light-helmet{
+        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/armor/lightheadat2.png);
+    }
+    .medium-helmet{
+        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/armor/mediumheadat2.png);
+    }
+    .heavy-helmet{
+        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/armor/heavyheadat2.png);
+    }
+    .light-chest{
+        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/armor/lightchestat2.png);
+    }
+    .medium-chest{
+        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/armor/mediumchestat2.png);
+    }
+    .heavy-chest{
+        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/armor/heavychestat2.png);
+    }
+    .light-hands{
+        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/armor/lighthandsat2.png);
+    }
+    .medium-hands{
+        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/armor/mediumhandsat2.png);
+    }
+    .heavy-hands{
+        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/armor/heavyhandsat2.png);
+    }
+    .light-legs{
+        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/armor/lightlegsat2.png);
+    }
+    .medium-legs{
+        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/armor/mediumlegsat2.png);
+    }
+    .heavy-legs{
+        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/armor/heavylegsat2.png);
+    }
+    .light-feet{
+        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/armor/lightfeetat2.png);
+    }
+    .medium-feet{
+        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/armor/mediumfeetat2.png);
+    }
+    .heavy-feet{
+        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/armor/heavyfeetat2.png);
+    }
+    .light-shield{
+        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/weapon/1hshieldat2.png);
+    }
+    .medium-shield{
+        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/weapon/1hshieldbt3.png);
+    }
+    .heavy-shield{
+        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/weapon/1hshielddt4.png);
+    }
+    .loadbar
+    {
+        width:35px;
+        height:840px;
+        background-color:#121212;
+        border:1px solid #1212128a;
+        position:relative;
+        /* position: absolute; */
+        top: 27px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    }
+    .bar
+    {
+        width:100%;
+        display:block;
+        font-family:arial;
+        font-size:12px; 
+        background-color:#bb9319;
+        color:#fff;
+        position:absolute;
+        bottom:0;
+        text-align: center;
+        border-radius: 0 0 8px 8px;
+    }
+    .light{
+        background-color : rgb(10, 105, 10);
+    }
+    .medium{
+        background-color : #bb9319;
+    }
+    .heavy{
+        background-color : rgb(149, 16, 16);
+    }
+</style>
