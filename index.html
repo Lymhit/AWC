@@ -3,20 +3,33 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>New World - Armor Weight Configurator</title>
+<title>New World - Configurator</title>
 <meta name="viewport" content="width=device-width, initial-scale=0.6">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <!-- Version développement. Celle-ci donne des avertissements utiles sur la console -->
-<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
-<!-- <script src="https://cdn.jsdelivr.net/npm/vue@2"></script> -->
+<!-- <script src="vue.js"></script> -->
+<script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
 </head>
 <body>
     <div id="app">
         <div class="txt">
             <div class="alert title">
+                <span class="lang" v-on:click="changelang(lang)">{{lang}}</span>
+            </div>
+        </div>
+        <div class="onglets">
+            <ul>
+                <li v-for="(item, item_index) in items" :key="item.id" v-on:click="change_show(item['type'])" :class="item['type'] === app ? 'selected':'' ">
+                    <span>{{ trad[lang][item['type']] }}</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div id="awc">
+        <div class="txt" :class="app === 'awc' ? '' : 'hidden'">
+            <div class="alert title">
                 <p>{{ trad[lang]['txt_1'] }}</p>
                 <p>{{ trad[lang]['txt_2'] }}</p>
-                <span class="lang" v-on:click="changelang(lang_dis)">{{lang_dis}}</span>
             </div>
             <p>{{ trad[lang]['txt_3'] }}</p>
             <p>{{ trad[lang]['txt_4'] }}</p>
@@ -24,7 +37,7 @@
             <div class="alert bonus info">{{ trad[lang]['info_bonus'] }}</div>
             <p>{{ trad[lang]['txt_5'] }}</p>
         </div>
-        <div class="divapp">
+        <div class="divapp" :class="app === 'awc' ? '' : 'hidden'">
             <ul>
                 <li v-for="(item, item_index) in items" :key="item.id">
                     <span 
@@ -43,23 +56,145 @@
                 <strong class="bar" :style="'height:'+total+'%;'" :class="[totalClass]">{{ total ? total : null }}</strong>
             </div>
         </div>
-        <div>
-            <p class="small"></p>
-            <p class="small">Copyright website © <a href="https://github.com/Lymhit" target="_blank">Lymhit on Github</a> - Copyright image © <a href="https://nwdb.info/" target="_blank">nwdb.info</a></p>
-            <p class="small copyright">Lym sur Bakhu dans la companie <a href="https://www.yaztromo.org/site/" target="_blank"> Les Fils de Yaztromo</a> - <a href="https://www.twitch.tv/lymhit" target="_blank">Twitch</a> - <a href="https://twitter.com/Lymhit" target="_blank">Twitter</a> - <a href="https://www.youtube.com/user/lymhit" target="_blank">Youtube</a> - <a href="https://www.puregamemedia.fr/new-world/quelle-armure-choisir-dans-new-world-le-poids-du-stuff/" target="_blank">Source</a></p>
+    </div>
+    <div id="asc">
+        <div :class="app === 'asc' ? '' : 'hidden'">  
+            <div class="alert title">
+                <div>
+                    <div class="div_progress" v-for="(builde, builde_key) in types" v-if="builde != ''">
+                        <label>{{ trad[lang][builde] }}</label>
+                        <div class="progress_menu">
+                            <!-- <span>-</span> -->
+                            <span class="progress_total" :id="'progress_total_'+builde">5</span>
+                            <!-- <span>+</span> -->
+                        </div>
+                        <progress :id="'progress_'+builde" :data-type="builde" class="progress_bar" value="5" max="350">  
+                        </progress>
+                        <div class="progress_step step_50" >50</div>
+                        <div class="progress_step step_100">100</div>
+                        <div class="progress_step step_150" >150</div>
+                        <div class="progress_step step_200" >200</div>
+                        <div class="progress_step step_250" >250</div>
+                        <div class="progress_step step_300" >300</div>
+                    </div>
+                </div>
+            </div>
+            <div class="ulapp">
+                <ul v-for="(objs, objs_key) in items">
+                    <li v-if='objs_key === "stats"' class="objs_li"> 
+                        <div class="carre asc_carre polaroid selected" style="height:auto;cursor: initial;">
+                            <p class="container">{{trad[lang]['txt_stats']}}</label>
+                            <div v-for="(item, item_index) in objs" class="unselect" :id="'asc_'+item.name">
+                                <select disabled class="select_perks" :id="'asc_select_'+item.name+'_perks_1'" @change="calcstats(item.name)" :data-item_name='item.name' :data-item_nb='1' onclick="event.stopPropagation()" style="cursor: initial;-webkit-appearance: none;-moz-appearance: none;">
+                                    <option :value="item.name" >{{trad[lang][item.name]}}</option>
+                                </select>
+                                <input type="number" @change="calcstats(item.name)" :id="'asc_input_'+item.name+'_perks_1'" min="5" max="30" class="input_perks" :data-stat='item.name' onclick="event.stopPropagation()">
+                            </div>
+                        </div>
+                    </li>
+                    <li v-else v-for="(item, item_index) in objs" v-on:click="active_perks(item.name)" class="objs_li">
+                        <div class="carre asc_carre polaroid" :class="item.name" :id="'asc_'+item.name" style="height: 180px;">
+                            <p class="container">{{trad[lang][item.name]}}</p>
+                            <div v-for="(nb, nb_index) in nbs" >
+                                <label class="xsmall block">{{trad[lang]['perks']}} {{nb}} :</label>
+                                <select class="select_perks" :id="'asc_select_'+item.name+'_perks_'+nb" @change="calcstats(item.name)" :data-item_name='item.name' :data-item_nb='nb' onclick="event.stopPropagation()">
+                                    <option v-for="(type, type_index) in types" :key="type.id" :value="type" >{{trad[lang][type]}}</option>
+                                </select>
+                                <input type="number" @change="calcstats(item.name)" :id="'asc_input_'+item.name+'_perks_'+nb" min="1" max="30" class="input_perks" :data-stat='item.name' onclick="event.stopPropagation()">
+                            </div>
+                            <span class="small" v-if="affixes(item.name)">{{trad[lang]["affixes"]}} {{affixes(item.name)}}</span>
+                        </div>
+                    </li> 
+                </ul>
+                <div class="stats_total">
+                    <ul>
+                        <li v-for="(items, items_index) in total" :key="items.id">
+                            <span v-if='items["name"] && items["value"]'>
+                                {{trad[lang][items["name"]]}} = 
+                                <span :class="total_class(''+items['value'])"> {{items["value"]}}</span>
+                            </span>
+                        </li>
+                    </ul>
+                    <div class="stats_bonus">
+                        <div class="" v-for="type in types">
+                            <div class="hidden" :class="total_class_bonus(type+'_')"> 
+                                <h3>{{ trad[lang][type] }}</h3> 
+                                <ul style="margin: 0;">
+                                    <li class="hidden" :class="total_class_bonus(type+'_'+pts)" v-for="pts in bonus_pts">
+                                        <strong>{{ pts }}</strong> - {{ trad[lang][type+"_"+pts] }}
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>  
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+    </div>
+    <div>
+        <p class="small"></p>
+        <p class="small">Copyright website © <a href="https://github.com/Lymhit" target="_blank">Lymhit on Github</a> - Copyright image © <a href="https://nwdb.info/" target="_blank">nwdb.info</a></p>
+        <p class="small copyright">Lym sur Bakhu dans la companie <a href="https://www.yaztromo.org/site/" target="_blank"> Les Fils de Yaztromo</a> - <a href="https://www.twitch.tv/lymhit" target="_blank">Twitch</a> - <a href="https://twitter.com/Lymhit" target="_blank">Twitter</a> - <a href="https://www.youtube.com/user/lymhit" target="_blank">Youtube</a> - <a href="https://www.puregamemedia.fr/new-world/quelle-armure-choisir-dans-new-world-le-poids-du-stuff/" target="_blank">Source</a></p>
+    </div>
 </body>
 </html>
 <script>
 var app = new Vue({
-    el: '#app',
+    el      : '#app',
+    data    : {
+        app     : "awc",
+        items   : [{"type":"awc"},{"type":"asc"}],
+        show    : "awc",
+        lang    : '🇫🇷',
+        lang_dis: '🇬🇧',
+        trad    : {
+            '🇬🇧' : {
+                'awc':"Armor Weight Configurator",
+                'asc':"Armor Stat Configurator",
+                },
+            '🇫🇷' : {
+                'awc':"Configurateur de poids d'armure",
+                'asc':"Configurateur de statistique d'armure",
+                },
+        },
+    },
+    mounted() {
+        if (localStorage.lang) {
+            this.lang = localStorage.lang;
+        }
+        if (localStorage.app_app) {
+            this.app = localStorage.app_app;
+        }
+        if (localStorage.app_show) {
+            this.app = localStorage.app_show;
+        }
+    },
+    methods: {
+        change_show: function (item){
+            this.app = item
+            this.show = this.app
+            awc.app = this.app
+            asc.app = this.app
+            localStorage.app_app = this.app;
+            localStorage.app_show = this.show;
+        },
+        changelang: function (lang) {
+            lang === '🇬🇧' ? this.lang       = '🇫🇷' : null;
+            lang === '🇫🇷' ? this.lang       = '🇬🇧' : null;
+            awc.lang = this.lang;
+            asc.lang = this.lang;
+            localStorage.lang = this.lang;
+        },
+    }
+})
+var awc = new Vue({
+    el: '#awc',
     data: {
+        app     : 'awc',
         total   : 0,
         totalClass : 'light',
         click   : null,
-        lang    : '🇫🇷',
-        lang_dis: '🇬🇧',
+        lang    : app.lang,
         trad    : {
             '🇬🇧' : {
                 'helmet':'Helmet',
@@ -159,6 +294,7 @@ var app = new Vue({
         }
     },
     mounted() {
+        this.lang = app.lang
         document.title = this.trad[this.lang]['txt_1']
         if (localStorage.selected_item) {
             this.selected_item = JSON.parse(localStorage.selected_item);
@@ -169,19 +305,28 @@ var app = new Vue({
         if (localStorage.total) {
             this.total = Number(localStorage.total);
         }
-        if (localStorage.lang) {
-            this.lang = localStorage.lang;
-        }
-        if (localStorage.lang_dis) {
-            this.lang_dis = localStorage.lang_dis;
-        }
         if (localStorage.info_dodge) {
             this.trad[this.lang]['info_dodge'] = localStorage.info_dodge;
         }
         if (localStorage.info_bonus) {
             this.trad[this.lang]['info_bonus'] = localStorage.info_bonus;
         }
+        if (localStorage.app_show) {
+            this.app = localStorage.app_show;
+        }
         this.loading();
+    },
+    watch: {
+        lang: function(newVal, oldVal) {
+            this.trad[this.lang]['info_dodge'] = this.trad[this.lang]['info_'+this.totalClass+'_dodge'];
+            this.trad[this.lang]['info_bonus'] = this.trad[this.lang]['info_'+this.totalClass+'_bonus'];
+            if (localStorage.info_dodge) {
+                localStorage.info_dodge = this.trad[this.lang]['info_'+this.totalClass+'_dodge'];
+            }
+            if (localStorage.info_bonus) {
+                localStorage.info_bonus = this.trad[this.lang]['info_'+this.totalClass+'_bonus'];
+            }
+        }
     },
     methods: {
         loading: function () {
@@ -195,23 +340,6 @@ var app = new Vue({
                 type != null ? item === 'helmet' || item === 'hands' || item === 'feet' ? key = type : key = type+'-'+item : key = null ;
                 key ? defaultweight += this.weights[key] : null;
             });
-        },
-        changelang: function (lang_dis) {
-            lang_dis === '🇬🇧' ? this.lang_dis = '🇫🇷' : null;
-            lang_dis === '🇬🇧' ? this.lang = '🇫🇷' : null;
-            lang_dis === '🇫🇷' ? this.lang_dis = '🇬🇧' : null;
-            lang_dis === '🇫🇷' ? this.lang = '🇬🇧' : null;
-            localStorage.lang_dis = this.lang_dis;
-            localStorage.lang = this.lang;
-            this.trad[this.lang]['info_dodge'] = this.trad[this.lang]['info_'+this.totalClass+'_dodge'];
-            this.trad[this.lang]['info_bonus'] = this.trad[this.lang]['info_'+this.totalClass+'_bonus'];
-            if (localStorage.info_dodge) {
-                localStorage.info_dodge = this.trad[this.lang]['info_'+this.totalClass+'_dodge'];
-            }
-            if (localStorage.info_bonus) {
-                localStorage.info_bonus = this.trad[this.lang]['info_'+this.totalClass+'_bonus'];
-            }
-
         },
         updateclick: function (type,item) {
             let defaultweight = 0;
@@ -249,6 +377,421 @@ var app = new Vue({
         }
     }
 })
+var asc = new Vue({
+    el: '#asc',
+    data: {
+        app     : null,
+        total   : 0,
+        stats   : [],
+        nbs     : [1,2],
+        click   : null,
+        lang    : app.lang,
+        trad    : {
+            '🇬🇧' : {
+                'helmet':'Helmet',
+                'chest':'Chest ',
+                'hands':'Hands ',
+                'legs':'Legs ',
+                'feet':'Feet ',
+                'shield':'Shield ',
+                'without':'',
+                'weapon1':'Weapon 1',
+                'weapon2':'Weapon 2',
+                'amulet':'Amulet',
+                'earring':'Earring',
+                'ring':'Ring',
+                'light':'Light',
+                'medium':'Medium',
+                'heavy':'Heavy',
+                'perks':'Perks',
+                'strength':'Strength',
+                'dexterity':'Dexterity',
+                'intelligence':'Intelligence',
+                'focus':'Focus',
+                'constitution':'Constitution',
+                'txt_1':"New World - Armor Weight Configurator",
+                'txt_2':"The weight of the equipment",
+                'txt_3':"There is a weight constraint that changes your agility and gives you bonuses during your fights.",
+                'txt_4':"Light = Less than 13 kg - Medium = Between 13 and 23 kg - Heavy = More than 23 kg",
+                'txt_5':"Click on type of armor, on the right, the total weight",
+                'info_dodge':"Light: Dodge is a fast roll over a long distance.",
+                'info_bonus':"20% damage and healing bonus.",
+                'info_light_dodge':"Light: Dodge is a fast roll over a long distance.",
+                'info_light_bonus':"20% damage and healing bonuses.",
+                'info_medium_dodge':"Normal: Dodge is a side jump.",
+                'info_medium_bonus':"10% damage and healing bonuses, and the crowd control skills you apply last 10% longer.",
+                'info_heavy_dodge':"Heavy: Dodge is a slow side step.",
+                'info_heavy_bonus':"Blocking stability bonus is increased by 15% and crowd control skills you apply last 20% longer.",
+                'strength_50': '+15% damage to melee weapon light attacks, +10% mining speed',
+                'strength_100': '+20% damage to melee weapon heavy attacks, +20 encumbrance',
+                'strength_150': '+50% stamina damage from melee weapon light and heavy attacks, -10% decrease in weight of mined items',
+                'strength_200': '+20% damage on stunned, slowed, or rooted enemies, +10% mining speed',
+                'strength_250': 'Stamina regeneration continues while performing light and heavy attacks with melee weapons, +10% yield increase when mining',
+                'strength_300': 'Light and heavy attacks with melee weapons gain Grit, 25% chance to fully mine an ore node with a single swing',
+                'dexterity_50': '+10% chance to critical hit, +10 skinning speed',
+                'dexterity_100': '+5% piercing damage, +20% haste for 3 seconds after skinning',
+                'dexterity_150': 'Dodging cost 10 less stamina, -10% decrease in weight of skinned items',
+                'dexterity_200': '+20% bonus backstab and headshot damage, +10% skinning speed',
+                'dexterity_250': '+30% bonus critical hit damage on stunned, slowed, or rooted enemies, +10% yield increase when skinning',
+                'dexterity_300': 'Ammo has +15% chance of being returned, guaranteed critical hit after a dodge roll',
+                'intelligence_50': '+10% damage to light and heavy magic attacks, +10% harvest speed',
+                'intelligence_100': '+20% critical hit damage, 5% chance to gain 1 azoth when harvesting',
+                'intelligence_150': '+20% to elemental damage, -10% decrease in weight of harvested items',
+                'intelligence_200': '+10 mana after a dodge, +10% harvest speed',
+                'intelligence_250': '+30% duration to damage of time spells, +10% yield increase when harvesting',
+                'intelligence_300': '+30% damage on first hit on full health target, -10% reduction in Azoth travel cost',
+                'focus_50': '+10% mana regeneration rate, +10% fishing line tension',
+                'focus_100': '+20 to mana pool, +10% yield increase when salvaging',
+                'focus_150': '+20% healing output, -10% decrease in weight of fishing items',
+                'focus_200': '+20% duration on casted buffs, +10% fishing line tension',
+                'focus_250': '+30 mana on any self or group kill, +10% increase to caught fish size',
+                'focus_300': 'When mana hits zero gain 200% mana regen for 10s (60s cooldown), 10% cooldown reduction for Inn fast travel',
+                'constitution_50': 'All health consumables +20% stronger, +10% logging speed',
+                'constitution_100': 'Increase max health by 10% of physical armor, 10% reduction on durability loss for tools',
+                'constitution_150': '20% reduction to crit damage taken, 10% decrease in weight of logging items',
+                'constitution_200': '+20% increase to armor, +10% logging speed',
+                'constitution_250': '60% damage reduction when full health, +10% yield increase when logging',
+                'constitution_300': '+30% duration of stun, slow, and root spells, 25% chance to chop down a tree in a single swing',
+                'affixes': 'Affixes',
+                'affixes_strength': 'Soldier',
+                'affixes_strength-dexterity': 'Barbarian',
+                'affixes_strength-intelligence': 'Figher',
+                'affixes_strength-focus': 'Spellsword',
+                'affixes_strength-constitution': 'Monk',
+                'affixes_dexterity-strength': 'Knight',
+                'affixes_dexterity': 'Sentry',
+                'affixes_dexterity-intelligence': 'Warden',
+                'affixes_dexterity-focus': 'Druid',
+                'affixes_dexterity-constitution': 'Nomad',
+                'affixes_intelligence-strength': 'Cavalier',
+                'affixes_intelligence-dexterity': 'Brigand',
+                'affixes_intelligence': 'Ranger',
+                'affixes_intelligence-focus': 'Assassin',
+                'affixes_intelligence-constitution': 'Duelist',
+                'affixes_focus-strength': 'Battlemage',
+                'affixes_focus-dexterity': 'Occultist',
+                'affixes_focus-intelligence': 'Trickster',
+                'affixes_focus': 'Scholar',
+                'affixes_focus-constitution': 'Mage',
+                'affixes_constitution-strength': 'Zealot',
+                'affixes_constitution-dexterity': 'Cleric',
+                'affixes_constitution-intelligence': 'Artificer',
+                'affixes_constitution-focus': 'Priest',
+                'affixes_constitution': 'Sage',
+                'txt_stats': 'Attributs',
+            },
+            '🇫🇷' : {
+                'helmet':'Casque',
+                'chest':'Cuirasse ',
+                'hands':'Mains ',
+                'legs':'Jambes ',
+                'feet':'Pieds ',
+                'shield':'Bouclier ',
+                'without':'',
+                'weapon1':'Arme 1',
+                'weapon2':'Arme 2',
+                'amulet':'Amulette',
+                'earring':"Boucle d'oreille",
+                'ring':'Anneau',
+                'light':'Léger',
+                'medium':'Moyen',
+                'heavy':'Lourd',
+                'perks':'Avantages',
+                'strength':'Force',
+                'dexterity':'Dextérité',
+                'intelligence':'Intelligence',
+                'focus':'Consentration',
+                'constitution':'Constitution',
+                'txt_1':"New World - Configurateur de poids d'armure",
+                'txt_2':"Le poids de l'équipement",
+                'txt_3':"Il existe une contrainte de poids qui modifie votre agilité et vous donne des bonus lors de vos combats.",
+                'txt_4':"Léger = Inférieur à 13 kg - Normal = Entre 13 et 23 kg - Lourd = Plus de 23 kg",
+                'txt_5':"Cliquer sur le type d'armure, à droite s'affiche le poids total des pièces sélectionnées",
+                'info_dodge':"Léger : L'esquive est une roulade rapide sur une grande distance.",
+                'info_bonus':"Bonus de dégâts et de soin de 20%.",
+                'info_light_dodge':"Léger : L'esquive est une roulade rapide sur une grande distance.",
+                'info_light_bonus':"Bonus de dégâts et de soins de 20%.",
+                'info_medium_dodge':"Normal : L'esquive est un saut de côté.",
+                'info_medium_bonus':"Bonus de dégâts et de soins de 10% et les compétences de contrôle de foule que vous appliquez durent 10% plus longtemps.",
+                'info_heavy_dodge':"Lourd : L'esquive est un pas de côté lent.",
+                'info_heavy_bonus':"Bonus de stabilité du blocage est augmentée de 15% et les compétences de contrôle de foule que vous appliquez durent 20% plus longtemps.",
+                'strength_50': '+5 dégâts aux attaques légères au corps à corps et vitesse de minage de 10%',
+                'strength_100': '+10 de dégâts aux attaques lourdes au corps à corps et +20 d’encombrement',
+                'strength_150': '+50 de dégâts d’endurance des attaques légères et lourdes d’armes de mêlée, et -10 pour cent de réduction du poids des objets minés.',
+                'strength_200': '+10 dégâts sur les ennemis étourdis, ralentis ou immobilisés, et +10 vitesse de minage,',
+                'strength_250': 'La régénération de l’endurance est plus rapide lorsque vous effectuez des attaques légères et lourdes avec une arme de mêlée et un rendement de +10 lors de l’exploitation minière.',
+                'strength_300': 'Les attaques légères et lourdes avec une arme de mêlée gagnent du GRIT et 25 % de chances d’exploiter le minerai d’un seul coup',
+                'dexterity_50': '+5 chances de coup critique et 10% de vitesse de dépeçage.',
+                'dexterity_100': '+5% de dégâts de poussée et 20% pendant trois secondes après le dépouillement.',
+                'dexterity_150': 'Les doges coûtent 10 pour cent d’endurance en moins et 10 pour cent de poids en moins pour les objets écorchés.',
+                'dexterity_200': '+10 dégâts de coup de poignard dans le dos et dégâts par balle dans la tête, et 10% de vitesse de dépeçage en plus.',
+                'dexterity_250': '+10 % de bonus de dégâts aux coups critiques sur les ennemis étourdis, ralentis ou enracinés et +10 de rendement lors du dépouillement des animaux.',
+                'dexterity_300': 'Coup critique garanti après un esquive (ne peut se déclencher qu’une fois toutes les 10 secondes) et les munitions ont 15 % de chances d’être renvoyées.',
+                'intelligence_50': '+10% dégâts aux attaques magiques légères et lourdes et +10% pour cent de vitesse de récolte',
+                'intelligence_100': '+10% aux dégâts des coups critiques et 5% de chance d’avoir un azoth lors de la récolte.',
+                'intelligence_150': '+15% aux dégâts élémentaires et -10% de diminution du poids des objets de récolte.',
+                'intelligence_200': '10 pour cent de mana après un doge et +10 de vitesse de récolte.',
+                'intelligence_250': '30 pour cent de durée des dégâts au fil du temps et 10 pour cent de rendement lors de la récolte.',
+                'intelligence_300': '30 % de dégâts lors du premier coup sur les cibles de santé complète et 10 % de réduction du coût de déplacement d’Azoth',
+                'focus_50': '+10 régénération de mana et 10 pour cent de tension de la ligne de pêche.',
+                'focus_100': '+20 pool de mana et 10% d’augmentation du rendement de changement lors de la récupération.',
+                'focus_150': '+20 sortie de guérison et -10 pour cent de diminution du poids du poisson',
+                'focus_200': '+20 durée sur les buffs lancés et +10 pour cent de tension de la ligne de pêche',
+                'focus_250': '+30 de mana pour chaque élimination individuelle ou en groupe, et 10 % d’augmentation pour tous les poissons capturés.',
+                'focus_300': 'Lorsque votre mana atteint zéro, gagnez 200 % de régénération de mana en plus pendant 10 secondes et 10 % de réduction du temps de recharge pour un voyage rapide à l’auberge.',
+                'constitution_50': 'Tous les consommables de santé sont 20 % plus puissants et une vitesse d’enregistrement de 10 %.',
+                'constitution_100': 'Augmentez la santé maximale de 10 pour cent de votre armure physique et de 10 pour cent de réduction sur la durabilité perdue pour les outils.',
+                'constitution_150': '10 % de dégâts critiques en moins sont subis et 10 % de réduction du poids des objets de journalisation.',
+                'constitution_200': '20 % d’augmentation de l’armure et 10 % de vitesse d’enregistrement en plus.',
+                'constitution_250': '-80 % de réduction des dégâts lorsque la santé est complète pendant 60 secondes et 10 % de rendement lors de la journalisation',
+                'constitution_300': '20 % de durée lorsque vous infligez des sorts d’étourdissement, de ralentissement et d’enracinement et 25 % de chances d’abattre un arbre en un seul coup.',
+                'affixes': 'Préfix',
+                'affixes_strength'                  : 'Soldat',
+                'affixes_strength-dexterity'        : 'Barbare',
+                'affixes_strength-intelligence'     : 'Combattant',
+                'affixes_strength-focus'            : 'Spellsword',
+                'affixes_strength-constitution'     : 'Moine',
+                'affixes_dexterity-strength'        : 'Chevalier',
+                'affixes_dexterity'                 : 'Sentinelle',
+                'affixes_dexterity-intelligence'    : 'Directeur',
+                'affixes_dexterity-focus'           : 'Druide',
+                'affixes_dexterity-constitution'    : 'Nomade',
+                'affixes_intelligence-strength'     : 'Cavalier',
+                'affixes_intelligence-dexterity'    : 'Brigand',
+                'affixes_intelligence'              : 'Ranger',
+                'affixes_intelligence-focus'        : 'Assassin',
+                'affixes_intelligence-constitution' : 'Duelliste',
+                'affixes_focus-strength'            : 'Mage de bataille',
+                'affixes_focus-dexterity'           : 'Occultiste',
+                'affixes_focus-intelligence'        : 'Filou',
+                'affixes_focus'                     : 'Savant',
+                'affixes_focus-constitution'        : 'Mage',
+                'affixes_constitution-strength'     : 'Fanatique',
+                'affixes_constitution-dexterity'    : 'Clerc',
+                'affixes_constitution-intelligence' : 'Artificier',
+                'affixes_constitution-focus'        : 'Prêtre',
+                'affixes_constitution'              : 'Sauge',
+                'txt_stats': 'Attributs',
+            },
+        },
+        items   : {
+            'stats':[
+                {'name':'strength'},
+                {'name':'dexterity'},
+                {'name':'intelligence'},
+                {'name':'focus'},
+                {'name':'constitution'}, 
+            ],
+            'armor':[
+                {'name':'helmet'},
+                {'name':'chest'},
+                {'name':'hands'},
+                {'name':'legs'},
+                {'name':'feet'},
+            ],
+            'weapons':[
+                {'name':'weapon1'},
+                {'name':'weapon2'},
+                {'name':'shield'},
+            ],
+            'objs':[
+                {'name':'amulet'},
+                {'name':'ring'},
+                {'name':'earring'},
+            ],
+        },
+        types   : [
+            '',
+            'strength',
+            'dexterity',
+            'intelligence',
+            'focus',
+            'constitution',
+        ],
+        bonus_pts:['50','100','150','200','250','300'],
+    },
+    mounted() {
+        this.lang = app.lang
+        if (localStorage.asc_stats) {
+            this.stats = JSON.parse(localStorage.asc_stats);
+            this.stats_to_input();
+        }
+        if (localStorage.app_show) {
+            this.app = localStorage.app_show;
+        }
+    },
+    methods: {
+        loading: function () {
+            let defaultweight = 0;
+            Object.entries(this.selected_item).forEach(entry => {
+                let [item , type] = entry;
+                let span;
+                span = document.getElementById(type+'-'+item);
+                span ? span.classList.add('selected') : null;
+                type === 'without' ? type = null : null;
+                type != null ? item === 'helmet' || item === 'hands' || item === 'feet' ? key = type : key = type+'-'+item : key = null ;
+                key ? defaultweight += this.weights[key] : null;
+            });
+        },
+        changelang: function (lang_dis) {
+            lang_dis === '🇬🇧' ? this.lang_dis = '🇫🇷' : null;
+            lang_dis === '🇬🇧' ? this.lang = '🇫🇷' : null;
+            lang_dis === '🇫🇷' ? this.lang_dis = '🇬🇧' : null;
+            lang_dis === '🇫🇷' ? this.lang = '🇬🇧' : null;
+            localStorage.lang_dis = this.lang_dis;
+            localStorage.lang = this.lang;
+            this.trad[this.lang]['info_dodge'] = this.trad[this.lang]['info_'+this.totalClass+'_dodge'];
+            this.trad[this.lang]['info_bonus'] = this.trad[this.lang]['info_'+this.totalClass+'_bonus'];
+            if (localStorage.info_dodge) {
+                localStorage.info_dodge = this.trad[this.lang]['info_'+this.totalClass+'_dodge'];
+            }
+            if (localStorage.info_bonus) {
+                localStorage.info_bonus = this.trad[this.lang]['info_'+this.totalClass+'_bonus'];
+            }
+
+        },
+        calcstats: function(id){
+            let span_modified = document.getElementById('asc_'+id);
+            span_modified ? span_modified.classList.add('selected') : null;
+            let inputs = document.querySelectorAll('input[type=number]');
+            let selects = document.querySelectorAll('select[class=select_perks]');
+            let stats = [];
+            let all_stats = [];
+            let calc = 0;
+            selects.forEach(
+                function(currentValue, currentIndex) {
+                    let val = currentValue.value;
+                    let item_name = currentValue.getAttribute('data-item_name');
+                    let item_nb = currentValue.getAttribute('data-item_nb');
+                    let obj = {};
+                    let input = document.getElementById("asc_input_"+item_name+"_perks_"+item_nb)
+                    let span = currentValue.parentElement.parentElement
+                    let selected =  span.classList.contains('selected') ? true:false;
+                    obj['type'] = item_name+"_perks_"+item_nb
+                    obj['name'] = val
+                    obj['value'] = input.value
+                    obj['selected'] = selected
+                    stats.indexOf(obj) === -1 ? stats.push(obj) : null;
+                },
+            );
+            this.stats = stats;
+            localStorage.asc_stats = JSON.stringify(this.stats);
+            this.stats_to_total();
+            this.stats_to_proress();
+        },
+        stats_to_total: function(type = ""){
+            var output = [];
+            this.stats.forEach(function(item) {
+                var existing = output.filter(function(v, i) {
+                    return v.name == item.name;
+                });
+                if (existing.length) {
+                    var existingIndex = output.indexOf(existing[0]);
+                    item.selected ? output[existingIndex].value = Number(output[existingIndex].value) + Number(item.value) : null ;
+                    item.selected ? output[existingIndex].type = type : "" ;
+                } else {
+                    item.value = Number(item.value);
+                    item.selected ? output.push(item): null;
+                }
+            });
+            this.total = output;
+        },
+        stats_to_input: function(){
+            let select,input = null;
+            this.stats.forEach(function(item) {
+                let name = item.type.split('_');
+                name[0] ? span = document.getElementById('asc_'+name[0]) : null;
+                select = document.getElementById('asc_select_'+item['type']);
+                input = document.getElementById('asc_input_'+item['type']);
+                span ? item.selected ? span.classList.add('selected') : null : null;
+                select ? select.value = item['name'] : null;
+                input ? input.value = item['value'] : null ;
+            });
+            this.stats_to_total();
+            this.stats_to_proress();
+        },
+        stats_to_proress: function(){
+            let select_all_progress = document.querySelectorAll('progress[class=progress_bar]');
+            let name = null;
+            let span = null;
+            let total = this.total;
+            select_all_progress.forEach(
+                function(progress, index) {
+                    name = progress.getAttribute('data-type');
+                    if(total){ 
+                        let found = null;
+                        total.find(element => {
+                            if(element.name === name){
+                                found = element.value;
+                            }
+                        });
+                        span = document.getElementById('progress_total_'+name);
+                        span.innerHTML = found;
+                        progress.value = found;
+                    }
+                },
+            );
+        },
+        active_perks: function(x) {
+            let selected = null;
+            let el = x ? document.getElementById('asc_'+x): null;
+            el ? el.classList.contains('selected') ? (el.classList.remove('selected'),selected = false) : (el.classList.add('selected'),selected = true) : null;
+            this.calcstats();
+        },
+        affixes:function(i) {
+            let r = 'affixes_'
+            this.stats.forEach(function(item) {
+                if(item.type.startsWith(i)){
+                    if(r.includes("-")){
+                        r = 'affixes_'
+                    } else {
+                        if(item.name != ''){
+                            if(r === 'affixes_'){
+                                r = 'affixes_'+item.name
+                            }else{
+                                r = r+'-'+item.name
+                            }
+                        }        
+                    }
+                }
+            });
+            return this.trad[this.lang][r]
+        }
+    },
+    computed:{
+        total_class: function(){
+            return t => {
+                let r = "stats_0";
+                t >= 50  ? r = "stats_50" :null;
+                t >= 100 ? r = "stats_100":null;
+                t >= 150 ? r = "stats_150":null;
+                t >= 200 ? r = "stats_250":null;
+                t >= 250 ? r = "stats_250":null;
+                t >= 300 ? r = "stats_300":null;
+                t >= 350 ? r = "stats_350":null;
+                return r;
+            }
+        },
+        total_class_bonus: function(){
+            return x => {
+                let s = x.split('_');
+                let n = s[0];
+                let v = Number(s[1]);
+                let r = null;
+                if(this.total){ 
+                    found = this.total.find(element => {
+                        if(element.name === n){
+                            if(element.value >= v && element.value >= 49 ){
+                                r =  "selected_txt" ;
+                            } 
+                        }
+                    });
+                }
+                return r;
+            }
+        },
+    }
+})
 </script>
 <style>
     html {
@@ -256,21 +799,32 @@ var app = new Vue({
         line-height: 1.15;
         -webkit-text-size-adjust: 100%;
         color: white;
-    }
-    body {
-        background-color: #1f1f1f;
-    }
-    #app{
         text-align: center;
     }
-    .divapp{
-        display: inline-flex;
+    body {
+        overflow: scroll;
+        background-color: #1f1f1f;
+        margin:0;
     }
-    .txt p{
+    ul {
+        padding-left: 0px;
+    }
+    .divapp {
+        display: inline-flex;
+        position: relative;
+    }
+    .ulapp {
+        display: inline-flex;
+        position: relative;
+    }
+    .txt p {
         margin: 0;
     }
-    .small{
+    .small {
         font-size: small;
+    }
+    .xsmall {
+        font-size: x-small;
     }
     .copyright a:nth-child(1){
         color: #f0f6fc;
@@ -307,7 +861,7 @@ var app = new Vue({
         top: 10px;
         cursor: pointer;
     }
-    .alert{
+    .alert {
         box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
         max-width: 700px;
         margin: auto;
@@ -321,12 +875,12 @@ var app = new Vue({
         border: 1px solid transparent;
         border-radius: .25rem;
     }
-    .bonus{
+    .bonus {
         background-color: #032c9e;
         height: 30px;
     }
-    li{
-        list-style-type: none; 
+    li {
+        list-style-type: none;
     }
     .container {
         text-align: center;
@@ -334,7 +888,6 @@ var app = new Vue({
         bottom: 0;
         margin: auto;
         background: #1212128a;
-        
         padding: 4px;
     }
     .carre{
@@ -348,21 +901,23 @@ var app = new Vue({
         overflow: hidden;
         border-radius: 8px;
     }
+    .objs_li{
+        margin: 10px;
+    }
+    .asc_carre{
+        margin: 0;
+        cursor: pointer;
+    }
     .selected {
         outline: 5px solid rgba(153, 0, 13, 0.479);
     }
-    /* .without-helmet{
-        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/blueprint/combatdummy.png);
+    .unselect {
+        outline: 0px solid rgba(153, 0, 13, 0.479) !important;
     }
-    .without-chest{
-        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/blueprint/combatdummy.png);
+    .selected_txt {
+        display: block !important;
+        color:#bb9319;
     }
-    .without-hands{
-        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/blueprint/combatdummy.png);
-    }
-    .without-legs{
-        background-image: url(https://cdn.nwdb.info/db/v7/icons/items/blueprint/combatdummy.png);
-    } */
     .light-helmet{
         background-image: url(https://cdn.nwdb.info/db/v7/icons/items/armor/lightheadat2.png);
     }
@@ -424,7 +979,6 @@ var app = new Vue({
         background-color:#121212;
         border:1px solid #1212128a;
         position:relative;
-        /* position: absolute; */
         top: 27px;
         border-radius: 8px;
         box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
@@ -451,4 +1005,150 @@ var app = new Vue({
     .heavy{
         background-color : rgb(149, 16, 16);
     }
+    .select_perks {
+        float: left;
+        width:69px;
+        background-color: #111;
+        border: 2px solid white;
+        color: white;
+        text-align: center;
+        -webkit-appearance: none;
+        margin: 10px 0 0 2px;
+        -webkit-appearance: textfield;
+        -moz-appearance: textfield;
+        border-radius: 20px 0 0 20px;
+        border-right: none;
+        cursor: pointer;
+        height: 31px;
+    }
+    .input_perks {
+        width: 40px;
+        height: 25px;
+        float: left;
+        background-color: #111;
+        border: 2px solid #bb9319;
+        color: white;
+        text-align: center;
+        -webkit-appearance: none;
+        margin: 10px 0;
+        -moz-appearance: textfield;
+        border-radius: 0 20px 20px 0;
+        border-left: none;
+        cursor: pointer;
+    }
+    .stats_total {
+        position: relative;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        max-width:180px;
+        margin: 25px 10px 0px 0px;
+        background:#121212;
+        display: inline-block;
+        overflow: hidden;
+        border-radius: 8px;
+        text-align: end;
+    }
+    .stats_total ul {
+        margin: 14px 0 0 0;
+        padding: 0;
+    }
+    .stats_bonus {
+        text-align: justify;
+        margin: 10px;
+    }
+    .hidden { 
+        display: none;
+    }
+    .block{
+        display: block;
+    }
+    .onglets{
+        max-width: 700px;
+        margin: auto;
+        color: white;
+        position: relative;
+        padding: 0 1rem 1rem 1rem;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid transparent;
+        border-radius: .25rem;
+        height: 30px;
+    }
+    .onglets ul {
+        margin: 0;
+        padding: 0;
+        list-style-type: none;
+    }
+    .onglets li {
+        display: table-cell;
+        cursor: pointer;
+        float: left;
+        background-color: #121212;
+        position: relative;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        height: 30px;
+        overflow: hidden;
+        border-radius: 8px;
+        margin-right: 12px;
+        padding: 10px;
+    }
+    .stats_0   {color: #1d9bf0;}
+    .stats_50  {color: #1988d3;}
+    .stats_100 {color: #1670ac;}
+    .stats_150 {color: #15669c;}
+    .stats_200 {color: #4be3ee;}
+    .stats_250 {color: #1de2f0;}
+    .stats_300 {color: #18c0cc;}
+    .stats_350 {color: #18bd86;}
+    .div_progress {
+        display: inline-flex;
+        position: relative;
+        width: 100%;
+        height: 48px;
+        /* background-color: #646464; */
+        margin: 10px;
+        text-align: initial;
+    }
+    .div_progress label {
+        position: absolute;
+        top: -18px;
+    }    
+    .progress_total {
+        width: 25px;
+        display: inline-block;
+        text-align: center;
+    }
+    .progress_menu {
+        display: inherit;
+    }
+    .progress_menu span {
+        margin:2px;
+    }
+    .progress_bar {
+        width: 100%;
+        height: 22px;
+        background-color: #5c5b5a;
+        text-align: center;
+        border:none;
+        transition: width .2s;
+    }
+    .progress_step {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        border: 2px solid white;
+        border-radius: 50%;
+        width: 10px;
+        height: 10px;
+        padding: 6px;
+        font-size: 11px;
+        top: -2px;
+    }
+    .step_50  {left: 21%;}
+    .step_100 {left: 33%;}
+    .step_150 {left: 46%;}
+    .step_200 {left: 59%;}
+    .step_250 {left: 72%;}
+    .step_300 {left: 86%;}
 </style>
